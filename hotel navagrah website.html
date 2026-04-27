@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Navagrah</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f5f0e8;
+    --dark: #0d0c0a;
+    --dark-2: #151410;
+    --dark-3: #1e1c17;
+    --text-muted: #8a8070;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: var(--cream);
+    font-family: 'Tenor Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.15s ease;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 28px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(13,12,10,0.95), transparent);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex;
+    gap: 40px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--cream);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    transition: opacity 0.3s, color 0.3s;
+  }
+  .nav-links a:hover { opacity: 1; color: var(--gold); }
+
+  /* HERO — full viewport, parallax layers */
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: -10%;
+    background:
+      linear-gradient(to bottom, rgba(13,12,10,0.2) 0%, rgba(13,12,10,0.7) 70%, var(--dark) 100%),
+      url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1800&q=80') center/cover no-repeat;
+    will-change: transform;
+    transition: transform 0.05s linear;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 0 60px 80px;
+    max-width: 700px;
+  }
+  .hero-eyebrow {
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 1s 0.3s forwards;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(64px, 8vw, 110px);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -1px;
+    margin-bottom: 30px;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 1.2s 0.5s forwards;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  .hero-sub {
+    font-size: 13px;
+    letter-spacing: 2px;
+    line-height: 2;
+    color: var(--text-muted);
+    max-width: 380px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 1s 0.8s forwards;
+  }
+  .hero-cta {
+    margin-top: 40px;
+    display: inline-block;
+    padding: 14px 40px;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 1s 1s forwards;
+    transition: background 0.3s, color 0.3s;
+  }
+  .hero-cta:hover { background: var(--gold); color: var(--dark); }
+
+  .hero-scroll-line {
+    position: absolute;
+    bottom: 40px;
+    right: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeUp 1s 1.3s forwards;
+  }
+  .hero-scroll-line span {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    writing-mode: vertical-rl;
+  }
+  .scroll-bar {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* SECTIONS — scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.9s ease, transform 0.9s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* DIVIDER */
+  .gold-line {
+    width: 60px;
+    height: 1px;
+    background: var(--gold);
+    margin: 24px 0;
+  }
+  .gold-line.center { margin: 24px auto; }
+
+  /* ABOUT */
+  .about {
+    padding: 120px 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    background: var(--dark-2);
+  }
+  .about-label {
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .about-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 300;
+    line-height: 1.1;
+    margin: 20px 0;
+  }
+  .about-body {
+    font-size: 14px;
+    line-height: 2;
+    color: var(--text-muted);
+  }
+  .about-img-wrap {
+    position: relative;
+  }
+  .about-img-wrap img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    display: block;
+  }
+  .about-img-wrap::before {
+    content: '';
+    position: absolute;
+    top: -20px; left: -20px;
+    right: 20px; bottom: 20px;
+    border: 1px solid rgba(201,168,76,0.2);
+    z-index: -1;
+  }
+
+  /* STATS */
+  .stats {
+    padding: 80px 60px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--dark-3);
+  }
+  .stat-item {
+    padding: 50px 40px;
+    text-align: center;
+    border-right: 1px solid rgba(201,168,76,0.1);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 64px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 12px;
+  }
+
+  /* ROOMS — horizontal scroll feel with stacked cards */
+  .rooms {
+    padding: 120px 60px;
+    background: var(--dark);
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 70px;
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 300;
+    margin-top: 16px;
+    line-height: 1.1;
+  }
+
+  .rooms-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 2px;
+  }
+  .room-card {
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+  }
+  .room-card img {
+    width: 100%;
+    height: 520px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.8s ease;
+  }
+  .room-card:hover img { transform: scale(1.07); }
+  .room-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(13,12,10,0.9) 0%, transparent 50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 32px;
+    transition: background 0.4s;
+  }
+  .room-card:hover .room-overlay {
+    background: linear-gradient(to top, rgba(13,12,10,0.95) 0%, rgba(13,12,10,0.3) 60%);
+  }
+  .room-type {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .room-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+  }
+  .room-price {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+  .room-btn {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 2px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .room-card:hover .room-btn { opacity: 1; transform: translateY(0); }
+
+  /* AMENITIES */
+  .amenities {
+    padding: 120px 60px;
+    background: var(--dark-2);
+  }
+  .amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-top: 70px;
+    border: 1px solid rgba(201,168,76,0.1);
+  }
+  .amenity-item {
+    padding: 50px 40px;
+    border-right: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    transition: background 0.4s;
+  }
+  .amenity-item:hover { background: rgba(201,168,76,0.04); }
+  .amenity-icon {
+    font-size: 28px;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .amenity-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    margin-bottom: 12px;
+  }
+  .amenity-desc {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-muted);
+  }
+
+  /* GALLERY */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 300px 300px;
+  }
+  .gallery-item {
+    overflow: hidden;
+    position: relative;
+  }
+  .gallery-item:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.7s ease;
+    filter: brightness(0.8);
+  }
+  .gallery-item:hover img { transform: scale(1.05); filter: brightness(1); }
+
+  /* BOOKING */
+  .booking {
+    padding: 120px 60px;
+    text-align: center;
+    background: var(--dark-3);
+    position: relative;
+    overflow: hidden;
+  }
+  .booking::before {
+    content: 'NAVAGRAH';
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 200px;
+    font-weight: 300;
+    color: rgba(201,168,76,0.03);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 20px;
+  }
+  .booking-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(40px, 5vw, 70px);
+    font-weight: 300;
+    line-height: 1.1;
+    margin: 20px 0 40px;
+  }
+  .booking-form {
+    display: flex;
+    gap: 2px;
+    max-width: 800px;
+    margin: 0 auto 40px;
+    background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.15);
+  }
+  .booking-form input, .booking-form select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(201,168,76,0.15);
+    padding: 20px 24px;
+    color: var(--cream);
+    font-family: 'Tenor Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    outline: none;
+  }
+  .booking-form input::placeholder { color: var(--text-muted); }
+  .booking-form select option { background: var(--dark); }
+  .booking-btn {
+    padding: 20px 36px;
+    background: var(--gold);
+    border: none;
+    color: var(--dark);
+    font-family: 'Tenor Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: none;
+    transition: background 0.3s;
+  }
+  .booking-btn:hover { background: var(--gold-light); }
+
+  /* CONTACT */
+  .contact {
+    padding: 80px 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 60px;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    background: var(--dark);
+  }
+  .contact-block-label {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .contact-block p {
+    font-size: 14px;
+    line-height: 2;
+    color: var(--text-muted);
+  }
+  .contact-block a {
+    color: var(--cream);
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    line-height: 2;
+    transition: color 0.3s;
+  }
+  .contact-block a:hover { color: var(--gold); }
+
+  /* FOOTER */
+  footer {
+    padding: 30px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    background: var(--dark);
+  }
+  footer p {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 4px;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--gold);
+    z-index: 200;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <div class="nav-logo">Navagrah</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#rooms">Rooms</a></li>
+    <li><a href="#amenities">Amenities</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#booking">Book Now</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Est. 1998 · A Legacy of Luxury</p>
+    <h1 class="hero-title">Where Stars<br><em>Meet</em> Earth</h1>
+    <p class="hero-sub">An intimate retreat inspired by the nine celestial bodies — crafted for those who seek more than just a stay.</p>
+    <a href="#booking" class="hero-cta">Reserve Your Stay</a>
+  </div>
+  <div class="hero-scroll-line">
+    <span>Scroll</span>
+    <div class="scroll-bar"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="reveal">
+    <p class="about-label">Our Story</p>
+    <h2 class="about-title">Nine Planets,<br>One Sanctuary</h2>
+    <div class="gold-line"></div>
+    <p class="about-body">Hotel Navagrah draws its name from the nine celestial bodies — Nava meaning nine, Grah meaning planet. Each corner of our hotel carries the spirit of a different planet: the warmth of the Sun, the calm of the Moon, the strength of Mars. We don't just offer rooms. We offer an experience that feels written in the stars.</p>
+    <br>
+    <p class="about-body">Nestled in the heart of the city, Navagrah has been a landmark of gracious hospitality for over two decades — serving guests who value quiet elegance over loud luxury.</p>
+  </div>
+  <div class="about-img-wrap reveal">
+    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80" alt="Hotel Interior">
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="25">0</div>
+    <div class="stat-label">Years of Legacy</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="48">0</div>
+    <div class="stat-label">Elegant Rooms</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="9">0</div>
+    <div class="stat-label">Curated Amenities</div>
+  </div>
+  <div class="stat-item reveal">
+    <div class="stat-num" data-target="4800">0</div>
+    <div class="stat-label">Happy Guests</div>
+  </div>
+</section>
+
+<!-- ROOMS -->
+<section class="rooms" id="rooms">
+  <div class="section-header reveal">
+    <p class="section-label">Accommodations</p>
+    <h2 class="section-title">Rooms & Suites</h2>
+  </div>
+  <div class="rooms-grid">
+    <div class="room-card reveal">
+      <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80" alt="Presidential Suite">
+      <div class="room-overlay">
+        <p class="room-type">Signature</p>
+        <h3 class="room-name">The Surya Suite</h3>
+        <p class="room-price">From ₹8,500 / night</p>
+        <a href="#booking" class="room-btn">Book Now →</a>
+      </div>
+    </div>
+    <div class="room-card reveal">
+      <img src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&q=80" alt="Deluxe Room">
+      <div class="room-overlay">
+        <p class="room-type">Deluxe</p>
+        <h3 class="room-name">Chandra Room</h3>
+        <p class="room-price">From ₹4,200 / night</p>
+        <a href="#booking" class="room-btn">Book Now →</a>
+      </div>
+    </div>
+    <div class="room-card reveal">
+      <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80" alt="Standard Room">
+      <div class="room-overlay">
+        <p class="room-type">Classic</p>
+        <h3 class="room-name">Mangal Room</h3>
+        <p class="room-price">From ₹2,800 / night</p>
+        <a href="#booking" class="room-btn">Book Now →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AMENITIES -->
+<section class="amenities" id="amenities">
+  <div class="section-header reveal">
+    <p class="section-label">Facilities</p>
+    <h2 class="section-title">The Navagrah Experience</h2>
+  </div>
+  <div class="amenities-grid">
+    <div class="amenity-item reveal">
+      <span class="amenity-icon">🍽</span>
+      <h3 class="amenity-name">Fine Dining</h3>
+      <p class="amenity-desc">Our in-house restaurant serves a curated menu of regional and continental cuisine, crafted fresh every evening.</p>
+    </div>
+    <div class="amenity-item reveal">
+      <span class="amenity-icon">💆</span>
+      <h3 class="amenity-name">Spa & Wellness</h3>
+      <p class="amenity-desc">A dedicated wellness centre offering traditional Ayurvedic therapies alongside modern rejuvenation treatments.</p>
+    </div>
+    <div class="amenity-item reveal">
+      <span class="amenity-icon">🏊</span>
+      <h3 class="amenity-name">Rooftop Pool</h3>
+      <p class="amenity-desc">Unwind in our heated rooftop pool with a panoramic view of the city skyline under open skies.</p>
+    </div>
+    <div class="amenity-item reveal">
+      <span class="amenity-icon">🎪</span>
+      <h3 class="amenity-name">Banquet Hall</h3>
+      <p class="amenity-desc">Elegant event spaces for weddings, corporate gatherings, and private celebrations — all handled end to end.</p>
+    </div>
+    <div class="amenity-item reveal">
+      <span class="amenity-icon">🚗</span>
+      <h3 class="amenity-name">Valet & Transfers</h3>
+      <p class="amenity-desc">Complimentary valet parking and airport transfer service available 24 hours for all guests.</p>
+    </div>
+    <div class="amenity-item reveal">
+      <span class="amenity-icon">📶</span>
+      <h3 class="amenity-name">Business Centre</h3>
+      <p class="amenity-desc">High-speed Wi-Fi, private meeting rooms, and a fully equipped business lounge for the modern traveller.</p>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" class="gallery">
+  <div class="gallery-item reveal">
+    <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=900&q=80" alt="Hotel Lobby">
+  </div>
+  <div class="gallery-item reveal">
+    <img src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=600&q=80" alt="Restaurant">
+  </div>
+  <div class="gallery-item reveal">
+    <img src="https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600&q=80" alt="Pool">
+  </div>
+  <div class="gallery-item reveal">
+    <img src="https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=600&q=80" alt="Spa">
+  </div>
+  <div class="gallery-item reveal">
+    <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&q=80" alt="Suite">
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section class="booking" id="booking">
+  <div class="reveal">
+    <p class="section-label">Reservations</p>
+    <h2 class="booking-title">Begin Your<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold-light)">Celestial</em> Stay</h2>
+    <div class="gold-line center"></div>
+    <div class="booking-form">
+      <input type="text" placeholder="Check-in Date">
+      <input type="text" placeholder="Check-out Date">
+      <select>
+        <option value="" disabled selected>Room Type</option>
+        <option>Surya Suite</option>
+        <option>Chandra Room</option>
+        <option>Mangal Room</option>
+      </select>
+      <button class="booking-btn">Check Availability</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);letter-spacing:1px;">Or call us directly: <span style="color:var(--cream)">+91 98765 43210</span></p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact">
+  <div class="contact-block reveal">
+    <p class="contact-block-label">Location</p>
+    <p>Hotel Navagrah<br>Near City Centre<br>Your City, India</p>
+  </div>
+  <div class="contact-block reveal">
+    <p class="contact-block-label">Contact</p>
+    <a href="tel:+919876543210">+91 98765 43210</a>
+    <a href="mailto:stay@hotelnavagrah.com">stay@hotelnavagrah.com</a>
+    <a href="#">WhatsApp Us</a>
+  </div>
+  <div class="contact-block reveal">
+    <p class="contact-block-label">Hours</p>
+    <p>Front Desk: 24 / 7<br>Restaurant: 7am – 11pm<br>Spa: 8am – 9pm</p>
+  </div>
+</section>
+
+<footer>
+  <p>© 2024 Hotel Navagrah. All rights reserved.</p>
+  <div class="footer-logo">NAVAGRAH</div>
+  <p>Crafted with care</p>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    cursor.style.left = mouseX + 'px';
+    cursor.style.top = mouseY + 'px';
+  });
+  function animateRing() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    ring.style.left = ringX + 'px';
+    ring.style.top = ringY + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Parallax hero
+  const heroBg = document.getElementById('heroBg');
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    heroBg.style.transform = `translateY(${scrollY * 0.4}px)`;
+    // Progress bar
+    const total = document.body.scrollHeight - window.innerHeight;
+    document.getElementById('progressBar').style.width = (scrollY / total * 100) + '%';
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), 100);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Counter animation
+  function animateCount(el, target, duration = 1800) {
+    let start = 0;
+    const step = timestamp => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      el.textContent = Math.floor(progress * target).toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  const statNums = document.querySelectorAll('.stat-num');
+  const statObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCount(entry.target, parseInt(entry.target.dataset.target));
+        statObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  statNums.forEach(el => statObserver.observe(el));
+</script>
+</body>
+</html>
